@@ -22,25 +22,29 @@ export class AppointmentService {
     private readonly billingRuleRepo: Repository<BillingRule>,
   ) {}
 
-  findAll() {
+  findAll(): Promise<Appointment[]> {
     return this.appointmentRepo.find();
   }
 
-  create(data: Partial<Appointment>) {
+  create(data: Partial<Appointment>): Promise<Appointment> {
     const appt = this.appointmentRepo.create(data);
     return this.appointmentRepo.save(appt);
   }
-  async recommendSlots(dto: RecommendAppointmentDto) {
+
+  async recommendSlots(
+    dto: RecommendAppointmentDto,
+  ): Promise<{ status: string; recommendedSlots: string[] }> {
     const { physicianId, clinicId, preferredDate, durationMinutes } = dto;
 
-    const availability = await this.availabilityBlockRepo.find({
-      where: {
-        physician: { id: physicianId },
-        clinic: { id: clinicId },
-      },
-    });
+    const availability: AvailabilityBlock[] =
+      await this.availabilityBlockRepo.find({
+        where: {
+          physician: { id: physicianId },
+          clinic: { id: clinicId },
+        },
+      });
 
-    const appointments = await this.appointmentRepo.find({
+    const appointments: Appointment[] = await this.appointmentRepo.find({
       where: {
         physician: { id: physicianId },
         clinic: { id: clinicId },
@@ -51,11 +55,11 @@ export class AppointmentService {
       },
     });
 
-    const billingRule = await this.billingRuleRepo.findOne({
+    const billingRule: BillingRule | null = await this.billingRuleRepo.findOne({
       where: { clinic: { id: clinicId } },
     });
 
-    const availableSlots = this.calculateSlots({
+    const availableSlots: string[] = this.calculateSlots({
       availability,
       appointments,
       billingRule,
@@ -68,13 +72,20 @@ export class AppointmentService {
       recommendedSlots: availableSlots.slice(0, 10),
     };
   }
+
   private calculateSlots({
     availability,
     appointments,
     billingRule,
     preferredDate,
     durationMinutes,
-  }) {
+  }: {
+    availability: AvailabilityBlock[];
+    appointments: Appointment[];
+    billingRule: BillingRule | null;
+    preferredDate: string;
+    durationMinutes: number;
+  }): string[] {
     const dayOfWeek = dayjs(preferredDate).day();
     const slots: string[] = [];
 
@@ -84,7 +95,7 @@ export class AppointmentService {
     }));
 
     availability
-      .filter((av) => av.dayOfWeek === dayOfWeek)
+      .filter((av) => av.day_of_week === dayOfWeek)
       .forEach((av) => {
         let start = dayjs(`${preferredDate}T${av.startTime}`).toDate();
         const end = dayjs(`${preferredDate}T${av.endTime}`).toDate();
@@ -94,14 +105,15 @@ export class AppointmentService {
 
           const hasConflict = appointmentIntervals.some(
             (app) =>
-              isBefore(start, app.end) && isAfter(proposedEnd, app.start),
+              isBefore(start, app.end.toDate()) &&
+              isAfter(proposedEnd, app.start.toDate()),
           );
 
           if (!hasConflict) {
             slots.push(start.toISOString());
           }
 
-          start = addMinutes(start, billingRule?.gapMinutes || 5);
+          start = addMinutes(start, billingRule?.gap_minutes || 5);
         }
       });
 

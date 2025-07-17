@@ -18,10 +18,10 @@ export class Appointment {
   clinic: Clinic;
 
   @Column({ type: 'timestamp' })
-  start_time: Date;
+  startTime: Date | string;
 
   @Column({ type: 'timestamp' })
-  end_time: Date;
+  endTime: Date;
 }
 
 export default Appointment;

@@ -17,10 +17,10 @@ export class AvailabilityBlock {
   day_of_week: number; // 0 (Sunday) to 6 (Saturday)
 
   @Column({ type: 'time' })
-  start_time: string;
+  startTime: string;
 
   @Column({ type: 'time' })
-  end_time: string;
+  endTime: string;
 }
 
 export default AvailabilityBlock;

@@ -8,13 +8,13 @@ export class Appointment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Physician, physician => physician.appointments)
+  @ManyToOne(() => Physician, (physician) => physician.appointments)
   physician: Physician;
 
-  @ManyToOne(() => Patient, patient => patient.appointments)
+  @ManyToOne(() => Patient, (patient) => patient.appointments)
   patient: Patient;
 
-  @ManyToOne(() => Clinic, clinic => clinic.appointments)
+  @ManyToOne(() => Clinic, (clinic) => clinic.appointments)
   clinic: Clinic;
 
   @Column({ type: 'timestamp' })

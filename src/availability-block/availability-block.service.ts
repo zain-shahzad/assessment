@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AvailabilityBlock } from 'src/entities';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class AvailabilityBlockService {
   constructor(
     @InjectRepository(AvailabilityBlock)

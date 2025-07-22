@@ -6,8 +6,8 @@ import { AvailabilityBlock } from 'src/entities';
 
 @Module({
   imports: [TypeOrmModule.forFeature([AvailabilityBlock])],
-    exports: [AvailabilityBlockService],
+  exports: [AvailabilityBlockService],
   providers: [AvailabilityBlockService],
-  controllers: [AvailabilityBlockController]
+  controllers: [AvailabilityBlockController],
 })
 export class AvailabilityBlockModule {}
